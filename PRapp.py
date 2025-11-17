@@ -21,6 +21,7 @@ def set_dark_glass_theme():
     """
     Inject custom CSS for a dark, glassmorphism-style theme.
     No background image is used; instead we use a dark gradient.
+    All text is light-colored for readability.
     """
     css = """
     <style>
@@ -136,7 +137,7 @@ def set_dark_glass_theme():
     st.markdown(css, unsafe_allow_html=True)
 
 
-# Call once, right after page_config
+# Apply dark glass theme
 set_dark_glass_theme()
 
 
@@ -202,7 +203,7 @@ def build_tfidf_engine(df: pd.DataFrame):
     )
 
     # Safety check: ensure there is at least some non-empty text
-    non_empty = corpus.str.strip()
+    non_empty = corpus.stripped = corpus.str.strip()
     non_empty = non_empty[non_empty != ""]
     if non_empty.empty:
         raise ValueError(
@@ -224,13 +225,17 @@ def recommend_by_index(
     all_products: pd.DataFrame,
     tfidf_matrix,
     top_n: int = 10,
-    use_price_rating_weights: bool = True
+    use_price_rating_weights: bool = True,
+    image_col: str | None = None,
 ) -> pd.DataFrame:
     """
     Given a product index from all_products, return top_n similar products.
 
     Similarity is computed from TF-IDF on name + categories and optionally
     reweighted by ratings, number of ratings and discount percentage.
+
+    If image_col is provided and exists, it will be included
+    in the returned columns.
     """
     if product_index not in all_products.index:
         raise ValueError("Invalid product index")
@@ -270,6 +275,7 @@ def recommend_by_index(
     score_series = score_series.drop(product_index, errors="ignore")
     top_indices = score_series.sort_values(ascending=False).head(top_n).index
 
+    # Columns to show in recommendations
     cols = [
         "name",
         "main_category",
@@ -279,6 +285,9 @@ def recommend_by_index(
         "ratings",
         "no_of_ratings",
     ]
+    if image_col and image_col in all_products.columns:
+        cols.append(image_col)
+
     cols = [c for c in cols if c in all_products.columns]
 
     return all_products.loc[top_indices, cols]
@@ -299,6 +308,9 @@ except Exception as e:
     st.error(f"Error loading local sample data: {e}")
     st.stop()
 
+# Detect image column (your column name is 'image')
+IMAGE_COL = "image" if "image" in all_products.columns else None
+
 try:
     tfidf_vectorizer, tfidf_matrix = build_tfidf_engine(all_products)
 except Exception as e:
@@ -313,8 +325,8 @@ st.title("🛒 Beta Product Recommendation Project")
 
 st.markdown(
     """
-    This demo app uses a **sample subset** of the full product dataset
-    to show content-based product recommendations using TF-IDF similarity
+    This demo app uses a **sample subset** of the full product dataset  
+    to show content-based product recommendations using TF-IDF similarity  
     with price & rating aware re-ranking.
     """
 )
@@ -482,7 +494,7 @@ else:
         st.dataframe(results[cols_to_show])
 
 # ------------------------------------------------------------------
-# 5. Select a product and show recommendations
+# 5. Select a product and show recommendations (with images if available)
 # ------------------------------------------------------------------
 st.subheader("Get Recommendations from a Selected Product")
 
@@ -515,11 +527,69 @@ else:
                 all_products=all_products,
                 tfidf_matrix=tfidf_matrix,
                 top_n=top_n_recs,
-                use_price_rating_weights=use_price_rating_weights
+                use_price_rating_weights=use_price_rating_weights,
+                image_col=IMAGE_COL,
             )
 
             st.write(f"Recommendations similar to product index **{selected_index}**:")
-            st.dataframe(recs)
+
+            # If we have an image column, render nice cards with image + details
+            if IMAGE_COL and IMAGE_COL in recs.columns and recs[IMAGE_COL].notna().any():
+                for _, row in recs.iterrows():
+                    with st.container():
+                        c1, c2 = st.columns([1, 3])
+
+                        # Product image (URL or local path)
+                        try:
+                            if pd.notna(row[IMAGE_COL]):
+                                c1.image(row[IMAGE_COL], use_column_width=True)
+                        except Exception:
+                            # If image fails to load, just ignore the error
+                            pass
+
+                        # Product text details
+                        c2.markdown(f"**{row.get('name', 'Unknown product')}**")
+
+                        meta_parts = []
+                        if pd.notna(row.get("main_category", None)):
+                            meta_parts.append(str(row["main_category"]))
+                        if pd.notna(row.get("sub_category", None)):
+                            meta_parts.append(str(row["sub_category"]))
+                        if meta_parts:
+                            c2.markdown(" • ".join(meta_parts))
+
+                        price_line = []
+                        if pd.notna(row.get("discount_price", None)):
+                            try:
+                                price_line.append(f"₹{int(row['discount_price'])}")
+                            except Exception:
+                                price_line.append(f"₹{row['discount_price']}")
+                        if pd.notna(row.get("actual_price", None)):
+                            try:
+                                price_line.append(f"~~₹{int(row['actual_price'])}~~")
+                            except Exception:
+                                price_line.append(f"~~₹{row['actual_price']}~~")
+                        if price_line:
+                            c2.markdown(" / ".join(price_line))
+
+                        rating_line = []
+                        if pd.notna(row.get("ratings", None)):
+                            try:
+                                rating_line.append(f"⭐ {row['ratings']:.1f}")
+                            except Exception:
+                                rating_line.append(f"⭐ {row['ratings']}")
+                        if pd.notna(row.get("no_of_ratings", None)):
+                            try:
+                                rating_line.append(f"({int(row['no_of_ratings'])} ratings)")
+                            except Exception:
+                                rating_line.append(f"({row['no_of_ratings']} ratings)")
+                        if rating_line:
+                            c2.markdown(" ".join(rating_line))
+
+                        c2.markdown("---")
+            else:
+                # Fallback: simple table if there is no usable image column
+                st.dataframe(recs)
 
         except ValueError as e:
             st.error(str(e))
