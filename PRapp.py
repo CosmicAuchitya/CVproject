@@ -5,7 +5,6 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 
-import base64
 from pathlib import Path
 
 # ------------------------------------------------------------------
@@ -18,77 +17,127 @@ st.set_page_config(
 )
 
 
-def set_background(image_path: str):
+def set_dark_glass_theme():
     """
-    Set an image as the full-page background in Streamlit and
-    make content readable by adding light panels on top.
+    Inject custom CSS for a dark, glassmorphism-style theme.
+    No background image is used; instead we use a dark gradient.
     """
-    img_path = Path(image_path)
-
-    if not img_path.exists():
-        st.warning(f"Background image not found: {img_path}")
-        return
-
-    with open(img_path, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
-
-    css = f"""
+    css = """
     <style>
-    /* Background image on the whole app */
-    .stApp {{
-        background-image: url("data:image/png;base64,{encoded}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-    }}
+    /* ---------- App background ---------- */
+    .stApp {
+        background: radial-gradient(circle at top, #111827 0, #020617 45%, #000000 100%);
+    }
 
-    /* Sidebar panel */
-    [data-testid="stSidebar"] > div:first-child {{
-        background-color: rgba(12, 17, 23, 0.98);
-        backdrop-filter: blur(4px);
-        color: #f5f7fa;
-    }}
-
-    /* Sidebar text */
-    [data-testid="stSidebar"] label,
-    [data-testid="stSidebar"] span,
-    [data-testid="stSidebar"] p {{
-        color: #e5ecff !important;
-        font-weight: 500;
-    }}
-
-    /* Dropdown text color (sidebar) */
-    [data-baseweb="select"] div {{
-        color: #0b1220 !important;
-    }}
-
-    /* Main content panel */
-    .main .block-container {{
-        background-color: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(4px);
-        border-radius: 16px;
+    /* ---------- Main content container (glass card) ---------- */
+    .main .block-container {
+        background: rgba(15, 23, 42, 0.92);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-radius: 1.5rem;
         padding: 1.5rem 2rem;
         margin-top: 1rem;
         margin-bottom: 1rem;
-    }}
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65);
+    }
 
-    /* Headings */
-    h1, h2, h3, h4, h5, h6 {{
-        color: #102A43;
-    }}
+    /* ---------- Sidebar (glass panel) ---------- */
+    [data-testid="stSidebar"] > div:first-child {
+        background: rgba(15, 23, 42, 0.96);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border-right: 1px solid #1f2937;
+    }
 
-    /* Normal text */
-    .stMarkdown, p, span, div {{
-        color: #102A43;
-    }}
+    /* Sidebar text */
+    [data-testid="stSidebar"] * {
+        color: #e5e7eb !important;
+        font-weight: 500;
+    }
+
+    /* ---------- Typography ---------- */
+    h1, h2, h3, h4, h5, h6 {
+        color: #f9fafb !important;
+    }
+
+    /* Make all normal text light and readable */
+    .stApp, .stApp p, .stApp span, .stApp li, .stApp label, .stApp div {
+        color: #e5e7eb;
+    }
+
+    /* Slightly muted text for helper descriptions */
+    .stMarkdown small, .stApp .markdown-text-container p {
+        color: #9ca3af;
+    }
+
+    /* ---------- Inputs / select boxes ---------- */
+    [data-baseweb="select"] div {
+        background-color: #020617 !important;
+        color: #e5e7eb !important;
+        border-radius: 0.6rem;
+        border: 1px solid #1f2937;
+    }
+
+    .stTextInput > div > div > input {
+        background-color: #020617;
+        color: #e5e7eb;
+        border-radius: 0.6rem;
+        border: 1px solid #1f2937;
+    }
+
+    .stSlider > div > div > div {
+        color: #e5e7eb;
+    }
+
+    /* ---------- Buttons ---------- */
+    .stButton > button {
+        background: linear-gradient(to right, #4f46e5, #22c55e);
+        color: #f9fafb;
+        border-radius: 999px;
+        padding: 0.4rem 1.1rem;
+        border: 0;
+        font-weight: 500;
+    }
+
+    .stButton > button:hover {
+        filter: brightness(1.08);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.85);
+    }
+
+    /* ---------- DataFrame styling for dark mode ---------- */
+    .stDataFrame thead tr th {
+        background-color: #020617 !important;
+        color: #e5e7eb !important;
+    }
+
+    .stDataFrame tbody tr td {
+        background-color: #0b1120 !important;
+        color: #e5e7eb !important;
+    }
+
+    /* Scrollbars (optional, small polish) */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #020617;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
     </style>
     """
     st.markdown(css, unsafe_allow_html=True)
 
 
 # Call once, right after page_config
-set_background("bg_image.png")
+set_dark_glass_theme()
 
 
 # ------------------------------------------------------------------
