@@ -1,33 +1,95 @@
-# Beta Product Recommendation Project
+# 🚀 Multi-Project Repository
 
-A **content-based product recommendation** web app built with **Streamlit**.
-
-The app lets users:
-
-- Search products by name
-- Filter by **main category**, **sub category**, **rating ranges**, and **price range**
-- Select any product from the filtered table and get **similar product recommendations**
-- Re-rank recommendations using **ratings**, **number of ratings**, and **discount percentage**
+This repository contains **two complete end-to-end Machine Learning web applications**, both built using **Streamlit**.
 
 ---
 
-## 1. Tech Stack
+## 📌 1. USA Airline Flight Delay Predictor (NEW)
 
-- **Python 3.10+**
-- **Streamlit** – web UI
-- **pandas / numpy** – data handling
-- **scikit-learn** – TF–IDF vectorizer and cosine similarity
+A modern, interactive ML web app that predicts the **probability (%) of a US domestic flight being delayed**.
+
+### 🔥 Features
+
+* Delay probability (e.g., **49.9% chance of delay**)
+* Classification: **Likely Delayed** / **Likely On-time**
+* Dark + glass-morphism UI
+* White input boxes with black text
+* Sidebar-driven inputs
+* Fully deployable on Streamlit Cloud
+
+### 🧠 Tech Stack
+
+* Python
+* Streamlit
+* scikit-learn
+* pandas, numpy
+* joblib
+
+### 📁 Files
+
+```
+USairline.py
+dt_ensemble_models.joblib
+requirementsUSair.txt
+```
 
 ---
 
-## 2. Project Structure
+## 📌 2. Product Recommendation App
 
-Typical layout:
+A **content-based recommendation system** that suggests similar products using TF-IDF + cosine similarity.
 
-```text
+### 🔥 Features
+
+* Search products by name
+* Filters: main category, sub-category, ratings, price
+* Re-ranking options
+* Similar product recommendations
+* Clean and simple UI
+
+### 🧠 Tech Stack
+
+* Python
+* Streamlit
+* scikit-learn
+* pandas, numpy
+
+### 📁 Files
+
+```
+PRapp.py
+sample_cleaned_products.csv
+
+requirements.txt
+```
+
+---
+
+## 📦 Project Structure
+
+```
 project_root/
-├─ PRapp.py                 # Streamlit app 
-├─ sample_cleaned_products.csv   # Cleaned products dataset
-├─ bg_image.png           # Background image for the UI
-├─ requirements.txt
-└─ README.md
+├── USairline.py
+├── dt_ensemble_models.joblib
+├── requirementsUSair.txt
+│
+├── PRapp.py
+├── sample_cleaned_products.csv
+├──
+│
+└── README.md
+```
+
+---
+
+
+
+---
+
+## 🙌 Author Auchity singh
+
+Created with ❤️ as part of hands-on ML project work.
+
+---
+
+**Copy-paste complete.** Let me know if you want badges, images, or repo banners added.
